@@ -1,11 +1,28 @@
-const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
-mongoose.Promise = global.Promise;
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
-const db = {};
-db.mongoose = mongoose;
-db.url = dotenv.MONGO_URI;
-// db.User = new UserModel(mongoose)
+const db = mongoose.connection;
 
-module.exports = db;
+db.on("error", function () {
+  console.log("Connection Failed!");
+});
+
+db.once("open", function () {
+  console.log("Connected");
+});
+
+const spendSchema = new mongoose.Schema({
+  mealCount: Number,
+  totalPrice: Number,
+  date: { type: Date, default: Date.now },
+  memo: String,
+});
+
+const Spend = mongoose.model("Spend", spendSchema);
+
+module.exports = Spend;
