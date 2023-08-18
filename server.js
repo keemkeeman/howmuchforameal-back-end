@@ -16,6 +16,7 @@ async function startServer() {
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
   app.use(cors()); // cors 미들웨어를 추가하여 모든 도메인에서의 요청을 허용합니다.
 
+  /* 몽고 db 연결 */
   mongoose
     .connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
