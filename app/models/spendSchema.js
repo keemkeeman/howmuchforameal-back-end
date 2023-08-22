@@ -9,14 +9,15 @@ mongoose.connect(process.env.MONGO_URI, {
 const db = mongoose.connection;
 
 db.on("error", function () {
-  console.log("Connection Failed!");
+  console.log("Spend Schema Connection Failed!");
 });
 
 db.once("open", function () {
-  console.log("Connected");
+  console.log("Spend Schema Connected");
 });
 
 const spendSchema = new mongoose.Schema({
+  creatorId: String,
   mealCount: Number,
   totalPrice: Number,
   date: { type: Date, default: Date.now },
