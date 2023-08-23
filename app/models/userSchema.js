@@ -17,9 +17,9 @@ db.once("open", function () {
 });
 
 const userSchema = new mongoose.Schema({
-  userId: String,
-  password: String,
-  nickName: String,
+  userId: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  nickName: { type: String, required: true },
 });
 
 const User = mongoose.model("User", userSchema);
