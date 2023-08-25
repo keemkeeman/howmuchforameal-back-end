@@ -1,10 +1,8 @@
 const express = require("express"); // express 패키지 불러옴
 const morgan = require("morgan"); // HTTP 요청,응답에 대한 로깅을 담당하는 미들웨어
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
-const secretKey = "secretKey";
 const cookieParser = require("cookie-parser");
 const Spend = require("./app/models/spendSchema"); // Spend 모델 가져오기
 const User = require("./app/models/userSchema"); // User 모델 가져오기
@@ -103,7 +101,7 @@ async function startServer() {
     }
 
     /* 비밀번호 확인 */
-    const validPassword = bcrypt.compare(user.password, password);
+    const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
       res.json({ message: "아이디, 비밀번호를 확인해주세요." });
@@ -112,7 +110,7 @@ async function startServer() {
 
     /* 쿠키 발급 */
     res.cookie("id", user._id, { httpOnly: true }); // https 에서만 발급
-    res.json({ message: "로그인 성공" });
+    res.json({ nickName: user.nickName });
   });
 
   /* 유저 불러오기 */
@@ -140,23 +138,28 @@ async function startServer() {
 
   /* 회원가입 */
   app.post("/api/users/signup", async (req, res) => {
-    const { userId, password, nickName } = req.body;
-    if (!userId || !password || !nickName) {
-      res.json({ message: "id, password, nickName은 필수입력 사항입니다." });
-      return;
-    }
-
-    const existUser = await User.findOne({ userId: userId });
-    if (existUser) {
-      res.json({ message: "이미 존재하는 아이디입니다." });
-      return;
-    }
-    const newUser = new User({ userId, password, nickName });
     try {
+      const { userId, password, nickName } = req.body;
+
+      const existUser = await User.findOne({ userId: userId });
+      if (existUser) {
+        res.json({ message: "이미 존재하는 아이디입니다." });
+        return;
+      }
+
+      const existNickName = await User.findOne({ nickName: nickName });
+      if (existNickName) {
+        res.json({ message: "이미 존재하는 닉네임입니다." });
+        return;
+      }
+
+      const hashedPw = await bcrypt.hash(password, 10);
+
+      const newUser = new User({ userId, password: hashedPw, nickName });
       await newUser.save();
-      res.json({ message: "회원가입 성공" });
+      res.json({ nickName: nickName });
     } catch (error) {
-      res.json({ message: "회원가입 실패" });
+      console.error("회원가입 에러", error);
     }
   });
 }
