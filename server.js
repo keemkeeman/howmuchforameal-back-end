@@ -43,20 +43,20 @@ async function startServer() {
   /************** SPEND CRUD **************/
   /****************************************/
   /* POST: 식비 카드 생성 */
-  app.post("/spends", async (req, res) => {
+  app.post("/api/spends/create", async (req, res) => {
     try {
       const newSpend = new Spend(req.body);
       await newSpend.save();
-      res.json(newSpend);
     } catch (error) {
       res.json({ error: error.message });
     }
   });
 
   /* GET: 모든 식비 카드 가져오기 */
-  app.get("/spends", async (req, res) => {
+  app.post("/api/spends", async (req, res) => {
     try {
-      const allSpends = await Spend.find();
+      const userId = req.body.userId;
+      const allSpends = await Spend.find({ creatorId: userId });
       res.json(allSpends);
     } catch (error) {
       res.json({ error: error.message });
@@ -64,7 +64,7 @@ async function startServer() {
   });
 
   /* PUT: 식비 카드 업데이트 */
-  app.put("/spends/:id", async (req, res) => {
+  app.put("/api/spends/:id", async (req, res) => {
     try {
       const updatedItem = await Spend.findByIdAndUpdate(
         req.params.id,
@@ -77,7 +77,7 @@ async function startServer() {
   });
 
   /* DELETE: 식비 카드 삭제 */
-  app.delete("/spends/:id", async (req, res) => {
+  app.delete("/api/spends/:id", async (req, res) => {
     try {
       await Spend.findByIdAndDelete(req.params.id);
     } catch (error) {
