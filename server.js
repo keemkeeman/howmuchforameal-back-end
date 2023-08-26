@@ -96,7 +96,7 @@ async function startServer() {
     const user = await User.findOne({ userId });
 
     if (!user) {
-      res.json({ message: "아이디, 비밀번호를 확인해주세요." });
+      res.json({ message: "ID가 존재하지 않습니다." });
       return;
     }
 
