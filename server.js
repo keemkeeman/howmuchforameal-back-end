@@ -4,15 +4,15 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const Spend = require("./app/models/spendSchema"); // Spend 모델 가져오기
+const SpendItem = require("./app/models/spendItemSchema"); // Spend 모델 가져오기
 const User = require("./app/models/userSchema"); // User 모델 가져오기
+const MealCount = require("./app/models/mealCountSchema");
 const mongoose = require("mongoose");
 
 require("dotenv").config();
 
 async function startServer() {
   const app = express(); // express 앱 생성
-
   app.use(bodyParser.json());
   app.use(cookieParser());
   app.use(express.static("public")); // public 디렉토리에 정적파일 제공하기 위한 미들웨어 설정
@@ -22,18 +22,21 @@ async function startServer() {
   app.use(cors({ origin: "http://localhost:3000", credentials: true })); // cors 미들웨어를 추가하여 모든 도메인에서의 요청을 허용합니다.
 
   /* 몽고 db 연결 */
-  mongoose
-    .connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => {
-      console.log("몽고db 연결 성공");
-    })
-    .catch((err) => {
-      console.log("몽고db 연결 실패", err);
-      process.exit();
-    });
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  // DB 접근
+  const db = mongoose.connection;
+
+  db.on("error", (error) => {
+    console.error("몽고DB 연결 에러", error);
+  });
+
+  db.once("open", () => {
+    console.log("몽고DB 연결 성공");
+  });
 
   app.listen(process.env.PORT, () => {
     console.log("서버 정상");
@@ -42,21 +45,54 @@ async function startServer() {
   /****************************************/
   /************** SPEND CRUD **************/
   /****************************************/
-  /* POST: 식비 카드 생성 */
-  app.post("/api/spends/create", async (req, res) => {
-    try {
-      const newSpend = new Spend(req.body);
-      await newSpend.save();
-    } catch (error) {
-      res.json({ error: error.message });
-    }
+  /* POST: 소비 아이템 추가 */
+  app.post(`/spends/item`, async (req, res) => {
+    const newSpend = new SpendItem(req.body);
+    await newSpend.save();
+    res.send(newSpend);
+
+    // try {
+    //   const sameDate = await Spend.findOne(
+    //     $and([{ date: req.body.date }, { creatorId: req.body.creatorId }])
+    //   );
+    //   if (!sameDate) {
+    //     const newSpend = new Spend(req.body);
+    //     await newSpend.save();
+    //     res.json({ newSpend });
+    //   } else {
+    //     res.json({ message: "똑같은게 있으니까 업데이트 혹시 자동으로되나?" });
+    //   }
+    // } catch (error) {
+    //   res.json({ error: error.message });
+    // }
+  });
+
+  /* POST: 끼니 추가 */
+  app.post(`/spends/mealcount`, async (req, res) => {
+    const mealCount = new MealCount(req.body);
+    await mealCount.save();
+    res.send(mealCount);
+    // try {
+    //   const sameDate = await MealCount.findOne(
+    //     $and([{ date: req.body.date }, { creatorId: req.body.creatorId }])
+    //   );
+
+    //   if (!sameDate) {
+    //     const mealCount = new MealCount(req.body);
+    //     await mealCount.save();
+    //   } else {
+    //     await MealCount.findByIdAndUpdate(sameDate._id, req.body);
+    //   }
+    // } catch (error) {
+    //   res.json({ error: error.message });
+    // }
   });
 
   /* GET: 모든 식비 카드 가져오기 */
-  app.post("/api/spends", async (req, res) => {
+  app.post("/spends", async (req, res) => {
     try {
       const userId = req.body.userId;
-      const allSpends = await Spend.find({ creatorId: userId });
+      const allSpends = await SpendItem.find({ userId });
       res.json(allSpends);
     } catch (error) {
       res.json({ error: error.message });
@@ -66,7 +102,7 @@ async function startServer() {
   /* PUT: 식비 카드 업데이트 */
   app.put("/api/spends/:id", async (req, res) => {
     try {
-      const updatedItem = await Spend.findByIdAndUpdate(
+      const updatedItem = await SpendItem.findByIdAndUpdate(
         req.params.id,
         req.body
       );
@@ -79,15 +115,16 @@ async function startServer() {
   /* DELETE: 식비 카드 삭제 */
   app.delete("/api/spends/:id", async (req, res) => {
     try {
-      await Spend.findByIdAndDelete(req.params.id);
+      await SpendItem.findByIdAndDelete(req.params.id);
+      res.json({ message: "삭제 성공" });
     } catch (error) {
-      res.json({ error: error.message });
+      res.json({ message: "삭제 실패" });
     }
   });
 
-  /****************************************/
+  /***************************************/
   /************** USER CRUD **************/
-  /****************************************/
+  /***************************************/
   /* 로그인 */
   app.post("/api/users/login", async (req, res) => {
     const { userId, password } = req.body;
@@ -109,7 +146,7 @@ async function startServer() {
     }
 
     /* 쿠키 발급 */
-    res.cookie("id", user._id, { httpOnly: true }); // https 에서만 발급
+    res.cookie("id", user._id, { httpOnly: true });
     res.json({ nickName: user.nickName });
   });
 
