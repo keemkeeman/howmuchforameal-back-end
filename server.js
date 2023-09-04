@@ -92,8 +92,32 @@ async function startServer() {
   app.post("/spends", async (req, res) => {
     try {
       const userId = req.body.userId;
-      const allSpends = await SpendItem.find({ userId });
-      res.json(allSpends);
+      const mergedItem = await MealCount.aggregate([
+        {
+          $match: { creatorId: userId },
+        },
+        {
+          $lookup: {
+            from: "spends", // SpendItem 컬렉션 이름
+            localField: "date",
+            foreignField: "date",
+            as: "items",
+          },
+        },
+        {
+          $project: {
+            creatorId: 1,
+            date: 1,
+            mealCount: 1,
+            memo: 1,
+            items: {
+              $ifNull: ["$items", []], // items 배열이 없을 경우 빈 배열로 초기화
+            },
+          },
+        },
+      ]);
+
+      res.send(mergedItem);
     } catch (error) {
       res.json({ error: error.message });
     }
