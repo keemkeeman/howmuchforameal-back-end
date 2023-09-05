@@ -45,7 +45,7 @@ async function startServer() {
   /****************************************/
   /************** SPEND CRUD **************/
   /****************************************/
-  /* POST: 소비 아이템 추가 */
+  /* POST: 식비 추가 */
   app.post(`/spends/item`, async (req, res) => {
     const newSpend = new SpendItem(req.body);
     await newSpend.save();
@@ -67,7 +67,7 @@ async function startServer() {
     // }
   });
 
-  /* POST: 끼니 추가 */
+  /* POST: 카드(끼니) 추가 */
   app.post(`/spends/mealcount`, async (req, res) => {
     const mealCount = new MealCount(req.body);
     await mealCount.save();
@@ -88,7 +88,7 @@ async function startServer() {
     // }
   });
 
-  /* GET: 모든 식비 카드 가져오기 */
+  /* 모든 카드 가져오기 */
   app.post("/spends", async (req, res) => {
     try {
       const userId = req.body.userId;
@@ -123,28 +123,53 @@ async function startServer() {
     }
   });
 
-  /* PUT: 식비 카드 업데이트 */
-  app.put("/api/spends/:id", async (req, res) => {
+  /* PUT: 카드수정 */
+  app.put("/spends/mealCount/:id", async (req, res) => {
     try {
-      const updatedItem = await SpendItem.findByIdAndUpdate(
+      const response = await MealCount.findByIdAndUpdate(
         req.params.id,
         req.body
       );
-      res.json(updatedItem);
+      if (!response) {
+        return res.status(404).send({ message: "카드를 찾을 수 없습니다." });
+      } else {
+        return res.status(200).send({ message: "수정성공" });
+      }
     } catch (error) {
-      res.json({ error: error.message });
+      console.error(error);
+      res.status(500).json({ message: "수정실패" });
     }
   });
 
-  /* DELETE: 식비 카드 삭제 */
-  app.delete("/api/spends/:id", async (req, res) => {
+  /* DELETE: 식비 삭제 */
+  app.delete("/spends/item/:id", async (req, res) => {
     try {
       await SpendItem.findByIdAndDelete(req.params.id);
-      res.json({ message: "삭제 성공" });
+      res.json({ message: "삭제성공" });
     } catch (error) {
-      res.json({ message: "삭제 실패" });
+      res.json({ message: "삭제실패" });
     }
   });
+
+  /* DELETE: 카드 삭제 */
+  app.delete("/spends/mealCount/:id", async (req, res) => {
+    try {
+      await SpendItem.deleteMany({ date: req.body.date });
+      await MealCount.findByIdAndDelete(req.params.id);
+      res.json({ message: "삭제성공" });
+    } catch (error) {
+      res.json({ message: "삭제실패" });
+    }
+  });
+
+  // app.delete("/api/spends/:id", async (req, res) => {
+  //   try {
+  //     await SpendItem.findByIdAndDelete(req.params.id);
+  //     res.json({ message: "삭제 성공" });
+  //   } catch (error) {
+  //     res.json({ message: "삭제 실패" });
+  //   }
+  // });
 
   /***************************************/
   /************** USER CRUD **************/
