@@ -47,9 +47,14 @@ async function startServer() {
   /****************************************/
   /* POST: 식비 추가 */
   app.post(`/spends/item`, async (req, res) => {
-    const newSpend = new SpendItem(req.body);
-    await newSpend.save();
-    res.send(newSpend);
+    try {
+      const newSpend = new SpendItem(req.body);
+      await newSpend.save();
+      res.send({ message: "등록성공" });
+    } catch (error) {
+      console.error("식비 추가 에러");
+      res.send({ message: "등록실패" });
+    }
 
     // try {
     //   const sameDate = await Spend.findOne(
@@ -69,9 +74,14 @@ async function startServer() {
 
   /* POST: 카드(끼니) 추가 */
   app.post(`/spends/mealcount`, async (req, res) => {
-    const mealCount = new MealCount(req.body);
-    await mealCount.save();
-    res.send(mealCount);
+    try {
+      const mealCount = new MealCount(req.body);
+      await mealCount.save();
+      res.send({ message: "등록성공" });
+    } catch (error) {
+      console.error("끼니 추가 에러", error);
+      res.send({ message: "등록실패" });
+    }
     // try {
     //   const sameDate = await MealCount.findOne(
     //     $and([{ date: req.body.date }, { creatorId: req.body.creatorId }])
@@ -161,15 +171,6 @@ async function startServer() {
       res.json({ message: "삭제실패" });
     }
   });
-
-  // app.delete("/api/spends/:id", async (req, res) => {
-  //   try {
-  //     await SpendItem.findByIdAndDelete(req.params.id);
-  //     res.json({ message: "삭제 성공" });
-  //   } catch (error) {
-  //     res.json({ message: "삭제 실패" });
-  //   }
-  // });
 
   /***************************************/
   /************** USER CRUD **************/
