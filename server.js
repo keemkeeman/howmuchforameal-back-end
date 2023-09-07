@@ -55,50 +55,26 @@ async function startServer() {
       console.error("식비 추가 에러");
       res.send({ message: "등록실패" });
     }
-
-    // try {
-    //   const sameDate = await Spend.findOne(
-    //     $and([{ date: req.body.date }, { creatorId: req.body.creatorId }])
-    //   );
-    //   if (!sameDate) {
-    //     const newSpend = new Spend(req.body);
-    //     await newSpend.save();
-    //     res.json({ newSpend });
-    //   } else {
-    //     res.json({ message: "똑같은게 있으니까 업데이트 혹시 자동으로되나?" });
-    //   }
-    // } catch (error) {
-    //   res.json({ error: error.message });
-    // }
   });
 
   /* POST: 카드(끼니) 추가 */
   app.post(`/spends/mealcount`, async (req, res) => {
     try {
-      const mealCount = new MealCount(req.body);
-      await mealCount.save();
-      res.send({ message: "등록성공" });
+      const existMealCount = await MealCount.findOne({ date: req.body.date });
+      if (!existMealCount) {
+        const mealCount = new MealCount(req.body);
+        await mealCount.save();
+        res.send({ message: "등록성공" });
+      } else {
+        res.send({ message: "중복" });
+      }
     } catch (error) {
       console.error("끼니 추가 에러", error);
       res.send({ message: "등록실패" });
     }
-    // try {
-    //   const sameDate = await MealCount.findOne(
-    //     $and([{ date: req.body.date }, { creatorId: req.body.creatorId }])
-    //   );
-
-    //   if (!sameDate) {
-    //     const mealCount = new MealCount(req.body);
-    //     await mealCount.save();
-    //   } else {
-    //     await MealCount.findByIdAndUpdate(sameDate._id, req.body);
-    //   }
-    // } catch (error) {
-    //   res.json({ error: error.message });
-    // }
   });
 
-  /* 모든 카드 가져오기 */
+  /* 최근 전체 카드 가져오기 */
   app.post("/spends", async (req, res) => {
     try {
       const userId = req.body.userId;
@@ -130,6 +106,63 @@ async function startServer() {
       res.send(mergedItem);
     } catch (error) {
       res.json({ error: error.message });
+    }
+  });
+
+  /* 기간 범위에 따른 카드 가져오기 */
+  app.post("/spends/dates", async (req, res) => {
+    try {
+      const userId = req.body.userId;
+      const startDate = req.body.startDate;
+      const endDate = req.body.endDate;
+      const mergedItem = await MealCount.aggregate([
+        {
+          $match: {
+            creatorId: userId,
+            date: { $gte: startDate, $lte: endDate },
+          },
+        },
+        {
+          $lookup: {
+            from: "spends", // SpendItem 컬렉션 이름
+            localField: "date",
+            foreignField: "date",
+            as: "items",
+          },
+        },
+        {
+          $project: {
+            creatorId: 1,
+            date: 1,
+            mealCount: 1,
+            memo: 1,
+            items: {
+              $ifNull: ["$items", []], // items 배열이 없을 경우 빈 배열로 초기화
+            },
+          },
+        },
+      ]);
+
+      res.send(mergedItem);
+    } catch (error) {
+      res.json({ error: error.message });
+    }
+  });
+
+  /* 임시 보관 소비 카드 가져오기 */
+  app.post("/spends/item/get", async (req, res) => {
+    try {
+      const userId = req.body.userId;
+      const response = await SpendItem.find({
+        creatorId: userId,
+      });
+      if (response.length > 0) {
+        res.send(response);
+      } else {
+        return;
+      }
+    } catch (error) {
+      console.error("임시 카드 가져오기 오류", error);
     }
   });
 
