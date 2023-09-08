@@ -23,7 +23,7 @@ async function startServer() {
   // CORS 미들웨어 설정
   app.use(
     cors({
-      origin: "https://howmuchforameal.vercel.app", // 클라이언트 도메인 설정
+      origin: process.env.CLIENT, // 클라이언트 도메인 설정
       methods: "GET,POST,PUT,DELETE", // 필요한 HTTP 메서드 지정
       credentials: true, // 인증 정보 (쿠키, 세션) 전달을 허용하려면 true로 설정
     })
