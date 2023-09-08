@@ -20,6 +20,15 @@ async function startServer() {
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
   app.use(cors({ origin: process.env.CLIENT, credentials: true })); // cors 미들웨어를 추가하여 모든 도메인에서의 요청을 허용합니다.
+  // CORS 미들웨어 추가
+  app.use((req, res, next) => {
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      "https://howmuchforameal.vercel.app"
+    );
+    // 필요한 다른 CORS 헤더도 설정 가능
+    next();
+  });
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
