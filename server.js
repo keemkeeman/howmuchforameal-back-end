@@ -19,7 +19,7 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
-  app.use(cors({ origin: "http://localhost:3000", credentials: true })); // cors 미들웨어를 추가하여 모든 도메인에서의 요청을 허용합니다.
+  app.use(cors({ origin: process.env.CLIENT, credentials: true })); // cors 미들웨어를 추가하여 모든 도메인에서의 요청을 허용합니다.
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
@@ -169,7 +169,7 @@ async function startServer() {
   /************** USER CRUD **************/
   /***************************************/
   /* 로그인 */
-  app.post("/api/users/login", async (req, res) => {
+  app.post("/users/login", async (req, res) => {
     const { userId, password } = req.body;
 
     /* 아이디 확인 */
@@ -194,7 +194,7 @@ async function startServer() {
   });
 
   /* 유저 불러오기 */
-  app.get("/api/users/auth", async (req, res) => {
+  app.get("/users/auth", async (req, res) => {
     const user_id = req.cookies.id;
 
     if (user_id) {
@@ -211,13 +211,13 @@ async function startServer() {
   });
 
   /* 로그아웃 */
-  app.post("/api/users/logout", (req, res) => {
+  app.post("/users/logout", (req, res) => {
     res.clearCookie("id");
     res.json({ message: "로그아웃 성공" });
   });
 
   /* 회원가입 */
-  app.post("/api/users/signup", async (req, res) => {
+  app.post("/users/signup", async (req, res) => {
     try {
       const { userId, password, nickName } = req.body;
 
