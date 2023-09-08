@@ -47,7 +47,7 @@ async function startServer() {
     console.log("몽고DB 연결 성공");
   });
 
-  app.listen(process.env.PORT, () => {
+  app.listen(process.env.PORT || 5000, () => {
     console.log("서버 정상");
   }); // 5000포트에서 서버 실행시 콘솔 출력
 
