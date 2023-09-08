@@ -20,14 +20,15 @@ async function startServer() {
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
 
-  // CORS 미들웨어 설정
-  // const corsOptions = {
-  //   origin: process.env.CLIENT, // 클라이언트 도메인
-  //   methods: "GET,POST,PUT,DELETE",
-  //   credentials: true, // withCredentials를 사용하면 true로 설정
-  // };
+  const corsOptions = {
+    origin: process.env.CLIENT,
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+    allowedHeaders:
+      "Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization", // 허용할 헤더 목록
+  };
 
-  app.use(cors());
+  app.use(cors(corsOptions));
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
