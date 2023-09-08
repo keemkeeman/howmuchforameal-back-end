@@ -109,46 +109,6 @@ async function startServer() {
     }
   });
 
-  /* 기간 범위에 따른 카드 가져오기 */
-  app.post("/spends/dates", async (req, res) => {
-    try {
-      const userId = req.body.userId;
-      const startDate = req.body.startDate;
-      const endDate = req.body.endDate;
-      const mergedItem = await MealCount.aggregate([
-        {
-          $match: {
-            creatorId: userId,
-            date: { $gte: startDate, $lte: endDate },
-          },
-        },
-        {
-          $lookup: {
-            from: "spends", // SpendItem 컬렉션 이름
-            localField: "date",
-            foreignField: "date",
-            as: "items",
-          },
-        },
-        {
-          $project: {
-            creatorId: 1,
-            date: 1,
-            mealCount: 1,
-            memo: 1,
-            items: {
-              $ifNull: ["$items", []], // items 배열이 없을 경우 빈 배열로 초기화
-            },
-          },
-        },
-      ]);
-
-      res.send(mergedItem);
-    } catch (error) {
-      res.json({ error: error.message });
-    }
-  });
-
   /* 임시 보관 소비 카드 가져오기 */
   app.post("/spends/item/get", async (req, res) => {
     try {
