@@ -23,14 +23,14 @@ async function startServer() {
   const corsOptions = {
     origin: process.env.CLIENT,
     methods: "GET,POST,PUT,DELETE",
-    credentials: true
+    credentials: true,
   };
 
-  app.use(cors(corsOptions));
-
-  app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", process.env.CLIENT);
-    res.header(
+  // 새로운 미들웨어 함수로 allowCors를 추가
+  const allowCors = (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Credentials", true);
+    res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT);
+    res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS"
     );
@@ -38,8 +38,14 @@ async function startServer() {
       "Access-Control-Allow-Headers",
       "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization"
     );
+    if (req.method === "OPTIONS") {
+      res.status(200).end();
+      return;
+    }
     next();
-  });
+  };
+
+  app.use(allowCors);
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
