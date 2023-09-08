@@ -15,7 +15,7 @@ async function startServer() {
   const app = express(); // express 앱 생성
   app.use(bodyParser.json());
   app.use(cookieParser());
-  // app.use(express.static("public")); // public 디렉토리에 정적파일 제공하기 위한 미들웨어 설정
+  app.use(express.static("public")); // public 디렉토리에 정적파일 제공하기 위한 미들웨어 설정
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
@@ -23,16 +23,21 @@ async function startServer() {
   const corsOptions = {
     origin: process.env.CLIENT,
     methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-    allowedHeaders:
-      "Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization", // 허용할 헤더 목록
+    credentials: true
   };
 
   app.use(cors(corsOptions));
 
   app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', req.header('Origin'));
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header("Access-Control-Allow-Origin", process.env.CLIENT);
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization"
+    );
     next();
   });
 
