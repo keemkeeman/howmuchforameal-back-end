@@ -26,7 +26,6 @@ async function startServer() {
     credentials: true,
   };
 
-  // 새로운 미들웨어 함수로 allowCors를 추가
   const allowCors = (req, res, next) => {
     res.setHeader("Access-Control-Allow-Credentials", true);
     res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT);
@@ -45,7 +44,8 @@ async function startServer() {
     next();
   };
 
-  app.use(allowCors);
+  app.use(cors(corsOptions)); // cors 미들웨어에 corsOptions를 적용
+  app.use(allowCors); // allowCors 미들웨어를 사용
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
