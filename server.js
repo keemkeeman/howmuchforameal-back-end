@@ -19,15 +19,15 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
-  app.options("*", cors());
+
   // CORS 미들웨어 설정
-  app.use(
-    cors({
-      origin: process.env.CLIENT, // 클라이언트 도메인 설정
-      methods: "GET,POST,PUT,DELETE", // 필요한 HTTP 메서드 지정
-      credentials: true, // 인증 정보 (쿠키, 세션) 전달을 허용하려면 true로 설정
-    })
-  );
+  const corsOptions = {
+    origin: process.env.CLIENT, // 클라이언트 도메인
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true, // withCredentials를 사용하면 true로 설정
+  };
+
+  app.use(cors(corsOptions));
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
@@ -220,8 +220,13 @@ async function startServer() {
 
   /* 로그아웃 */
   app.post("/users/logout", (req, res) => {
-    res.clearCookie("id");
-    res.json({ message: "로그아웃 성공" });
+    try {
+      res.clearCookie("id");
+      res.send({ message: "로그아웃성공" });
+    } catch (error) {
+      console.error("로그아웃 에러", error);
+      res.send({ message: "로그아웃실패" });
+    }
   });
 
   /* 회원가입 */
