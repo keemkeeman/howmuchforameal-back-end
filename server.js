@@ -15,18 +15,19 @@ async function startServer() {
   const app = express(); // express 앱 생성
   app.use(bodyParser.json());
   app.use(cookieParser());
+  // app.use(express.static("public")); // public 디렉토리에 정적파일 제공하기 위한 미들웨어 설정
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
 
   // CORS 미들웨어 설정
-  const corsOptions = {
-    origin: process.env.CLIENT, // 클라이언트 도메인
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true, // withCredentials를 사용하면 true로 설정
-  };
+  // const corsOptions = {
+  //   origin: process.env.CLIENT, // 클라이언트 도메인
+  //   methods: "GET,POST,PUT,DELETE",
+  //   credentials: true, // withCredentials를 사용하면 true로 설정
+  // };
 
-  app.use(cors(corsOptions));
+  app.use(cors());
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
