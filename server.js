@@ -21,14 +21,14 @@ async function startServer() {
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
 
   const corsOptions = {
-    origin: "*",
+    origin: process.env.CLIENT,
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
 
   const allowCors = (req, res, next) => {
     res.setHeader("Access-Control-Allow-Credentials", true);
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT);
     res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS"
