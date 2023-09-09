@@ -15,7 +15,7 @@ async function startServer() {
   const app = express(); // express 앱 생성
   app.use(bodyParser.json());
   app.use(cookieParser());
-  app.use(express.static("build")); // build에 있는 정적파일 서버에서 보여준다는 미들웨어
+  app.use(express.static('build', { 'Content-Type': 'application/javascript' })); // build에 있는 정적파일 서버에서 보여준다는 미들웨어
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
