@@ -20,6 +20,10 @@ async function startServer() {
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
 
+  app.listen(process.env.PORT || 5000, () => {
+    console.log("서버 정상");
+  }); //
+
   const corsOptions = {
     origin: process.env.CLIENT,
     methods: "GET,POST,PUT,DELETE",
@@ -63,10 +67,6 @@ async function startServer() {
   db.once("open", () => {
     console.log("몽고DB 연결 성공");
   });
-
-  app.listen(process.env.PORT || 5000, () => {
-    console.log("서버 정상");
-  }); // 5000포트에서 서버 실행시 콘솔 출력
 
   /****************************************/
   /************** SPEND CRUD **************/
