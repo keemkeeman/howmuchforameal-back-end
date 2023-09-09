@@ -25,7 +25,7 @@ async function startServer() {
   }); //
 
   const corsOptions = {
-    origin: process.env.CLIENT,
+    origin: "https://howmuchforameal.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
