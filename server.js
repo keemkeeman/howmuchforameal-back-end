@@ -9,24 +9,26 @@ const User = require("./app/models/userSchema"); // User 모델 가져오기
 const MealCount = require("./app/models/mealCountSchema");
 const mongoose = require("mongoose");
 const favicon = require("express-favicon");
-
-require("dotenv").config();
+const dotenv = require("dotenv");
 
 async function startServer() {
+  dotenv.config();
   const app = express(); // express 앱 생성
   app.use(bodyParser.json());
   app.use(cookieParser());
-  app.use(express.static("public")); // public 디렉토리에 정적파일 제공하기 위한 미들웨어 설정
+  app.use(express.static("build")); // build에 있는 정적 파일 서버에서 보여준다는 미들웨어
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
   app.use(favicon(__dirname + "/public/favicon.ico"));
   const port = process.env.PORT;
 
-  app.listen(port || 5000);
+  app.listen(port || 5000, () => {
+    console.log("서버 실행");
+  });
 
   app.get("/", (req, res, next) => {
-    res.send("한끼얼마 서버");
+    res.sendFile(__dirname + "/build/index.html");
   });
 
   const corsOptions = {
