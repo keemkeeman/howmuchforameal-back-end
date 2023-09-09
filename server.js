@@ -37,7 +37,7 @@ async function startServer() {
 
   const allowCors = (req, res, next) => {
     res.setHeader("Access-Control-Allow-Credentials", true);
-    res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT);
+    res.setHeader("Access-Control-Allow-Origin", "https://howmuchforameal.vercel.app");
     res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS"
