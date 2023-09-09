@@ -21,10 +21,9 @@ async function startServer() {
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
   app.use(favicon(__dirname + "/public/favicon.ico"));
+  const port = process.env.PORT;
 
-  app.listen(process.env.PORT || 5000, () => {
-    console.log("서버 정상");
-  });
+  app.listen(port || 5000);
 
   app.get("/", (req, res, next) => {
     res.send("한끼얼마 서버");
