@@ -8,6 +8,7 @@ const SpendItem = require("./app/models/spendItemSchema"); // Spend 모델 가�
 const User = require("./app/models/userSchema"); // User 모델 가져오기
 const MealCount = require("./app/models/mealCountSchema");
 const mongoose = require("mongoose");
+const favicon = require('express-favicon');
 
 require("dotenv").config();
 
@@ -19,11 +20,12 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
+  app.use(favicon(__dirname + '/public/favicon.ico'));
 
   app.listen(process.env.PORT || 5000, () => {
     console.log("서버 정상");
   });
-  
+
   app.get("/", (req, res, next) => {
     res.send("한끼얼마 서버");
   });
