@@ -30,14 +30,17 @@ async function startServer() {
   });
 
   const corsOptions = {
-    origin: process.env.CLIENT,
+    origin: "https://howmuchforameal.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
 
   const allowCors = (req, res, next) => {
     res.setHeader("Access-Control-Allow-Credentials", true);
-    res.setHeader("Access-Control-Allow-Origin", "https://howmuchforameal.vercel.app");
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      "https://howmuchforameal.vercel.app"
+    );
     res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, OPTIONS"
