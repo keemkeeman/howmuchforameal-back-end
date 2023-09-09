@@ -23,6 +23,7 @@ async function startServer() {
   app.listen(process.env.PORT || 5000, () => {
     console.log("서버 정상");
   });
+  
   app.get("/", (req, res, next) => {
     res.send("한끼얼마 서버");
   });
