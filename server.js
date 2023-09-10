@@ -254,7 +254,7 @@ async function startServer() {
   /* 로그아웃 */
   app.post("/users/logout", (req, res) => {
     try {
-      res.clearCookie("id");
+      res.clearCookie("id", { expires: new Date(0) });
       res.send({ message: "로그아웃성공" });
     } catch (error) {
       console.error("로그아웃 에러", error);
