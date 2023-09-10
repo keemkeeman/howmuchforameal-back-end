@@ -32,11 +32,6 @@ async function startServer() {
 
   app.use("/", indexRouter);
 
-  // app.get("/", (req, res, next) => {
-  //   res.sendFile(__dirname + "/app/routes/index.js");
-  //   console.log("서버 연결")
-  // });
-
   const corsOptions = {
     origin: "https://howmuchforameal.vercel.app",
     methods: "GET,POST,PUT,DELETE",
@@ -231,7 +226,11 @@ async function startServer() {
     }
 
     /* 쿠키 발급 */
-    res.cookie("id", user._id, { httpOnly: true });
+    res.cookie("id", user._id, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
     res.json({ nickName: user.nickName });
   });
 
