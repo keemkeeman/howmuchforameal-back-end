@@ -9,13 +9,14 @@ const User = require("./app/models/userSchema"); // User 모델 가져오기
 const MealCount = require("./app/models/mealCountSchema");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const indexRouter = express.Router();
 
 async function startServer() {
   dotenv.config();
   const app = express(); // express 앱 생성
   app.use(bodyParser.json());
   app.use(cookieParser());
-  app.use(express.static('build')); // build에 있는 정적파일 서버에서 보여준다는 미들웨어
+  app.use(express.static("build")); // build에 있는 정적파일 서버에서 보여준다는 미들웨어
   app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
   app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
@@ -25,9 +26,16 @@ async function startServer() {
     console.log("서버 실행");
   });
 
-  app.get("/", (req, res, next) => {
-    res.sendFile(__dirname + "/build/index.html");
+  indexRouter.route("/").get(function (req, res) {
+    res.json({ 현재시간: new Date().toLocaleString() });
   });
+
+  app.use("/", indexRouter);
+
+  // app.get("/", (req, res, next) => {
+  //   res.sendFile(__dirname + "/app/routes/index.js");
+  //   console.log("서버 연결")
+  // });
 
   const corsOptions = {
     origin: "https://howmuchforameal.vercel.app",
