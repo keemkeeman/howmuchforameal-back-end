@@ -30,7 +30,7 @@ async function startServer() {
   });
 
   const corsOptions = {
-    origin: "https://howmuchforameal-5360e61528e0.herokuapp.com",
+    origin: "https://howmuchforameal.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
@@ -39,7 +39,7 @@ async function startServer() {
     res.setHeader("Access-Control-Allow-Credentials", true);
     res.setHeader(
       "Access-Control-Allow-Origin",
-      "https://howmuchforameal-5360e61528e0.herokuapp.com"
+      "https://howmuchforameal.vercel.app"
     );
     res.setHeader(
       "Access-Control-Allow-Methods",
