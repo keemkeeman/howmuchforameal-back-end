@@ -33,7 +33,7 @@ async function startServer() {
 
   /* CORS 설정 */
   const corsOptions = {
-    origin: "https://howmuchforameal.vercel.app",
+    origin: process.env.CLIENT,
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
