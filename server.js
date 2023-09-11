@@ -1,66 +1,65 @@
-const express = require("express"); // express 패키지 불러옴
-const morgan = require("morgan"); // HTTP 요청,응답에 대한 로깅을 담당하는 미들웨어
+const express = require("express");
+const morgan = require("morgan");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const SpendItem = require("./app/models/spendItemSchema"); // 식비 모델
+const User = require("./app/models/userSchema"); // User 모델
+const MealCount = require("./app/models/mealCountSchema"); // 끼니 모델
+const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
-const cookieParser = require("cookie-parser");
-const SpendItem = require("./app/models/spendItemSchema"); // Spend 모델 가져오기
-const User = require("./app/models/userSchema"); // User 모델 가져오기
-const MealCount = require("./app/models/mealCountSchema");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const indexRouter = express.Router();
 
 async function startServer() {
   dotenv.config();
+
   const app = express(); // express 앱 생성
+  const port = process.env.PORT;
+  const indexRouter = express.Router();
+  indexRouter.route("/").get(function (req, res) {
+    res.json({ 현재시간: new Date().toLocaleString() });
+  });
+
   app.use(bodyParser.json());
   app.use(cookieParser());
-  app.use(express.static("build")); // build에 있는 정적파일 서버에서 보여준다는 미들웨어
-  app.use(express.urlencoded({ extended: true })); // url 인코딩된 데이터 파싱하기 위한 미들웨어 설정
+  app.use(express.urlencoded({ extended: true })); // HTML 폼 사용시 필요 (url 인코딩된 데이터 파싱)
   app.use(express.json()); // JSON 데이터 파싱하기 위한 미들웨어 설정
-  app.use(morgan("dev")); // dev 포멧(개발용)의 로깅을 설정
-  const port = process.env.PORT;
+  app.use(morgan("dev")); // 개발 환경에서 HTTP 로그를 콘솔에 출력
+  app.use("/", indexRouter);
 
   app.listen(port || 5000, () => {
     console.log("서버 실행");
   });
 
-  indexRouter.route("/").get(function (req, res) {
-    res.json({ 현재시간: new Date().toLocaleString() });
-  });
-
-  app.use("/", indexRouter);
-
+  /* CORS 설정 */
   const corsOptions = {
     origin: "https://howmuchforameal.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   };
+  app.use(cors(corsOptions));
 
-  const allowCors = (req, res, next) => {
-    res.setHeader("Access-Control-Allow-Credentials", true);
-    res.setHeader(
-      "Access-Control-Allow-Origin",
-      "https://howmuchforameal.vercel.app"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization"
-    );
-    if (req.method === "OPTIONS") {
-      res.status(200).end();
-      return;
-    }
-    next();
-  };
-
-  app.use(cors(corsOptions)); // cors 미들웨어에 corsOptions를 적용
-  app.use(allowCors); // allowCors 미들웨어를 사용
+  // const allowCors = (req, res, next) => {
+  //   res.setHeader("Access-Control-Allow-Credentials", true);
+  //   res.setHeader(
+  //     "Access-Control-Allow-Origin",
+  //     "https://howmuchforameal.vercel.app"
+  //   );
+  //   res.setHeader(
+  //     "Access-Control-Allow-Methods",
+  //     "GET, POST, PUT, DELETE, OPTIONS"
+  //   );
+  //   res.setHeader(
+  //     "Access-Control-Allow-Headers",
+  //     "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization"
+  //   );
+  //   if (req.method === "OPTIONS") {
+  //     res.status(200).end();
+  //     return;
+  //   }
+  //   next();
+  // };
+  // app.use(allowCors); // allowCors 미들웨어를 사용
 
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
@@ -68,7 +67,6 @@ async function startServer() {
     useUnifiedTopology: true,
   });
 
-  // DB 접근
   const db = mongoose.connection;
 
   db.on("error", (error) => {
@@ -82,7 +80,7 @@ async function startServer() {
   /****************************************/
   /************** SPEND CRUD **************/
   /****************************************/
-  /* POST: 식비 추가 */
+  /* 식비 추가 */
   app.post(`/spends/item`, async (req, res) => {
     try {
       const newSpend = new SpendItem(req.body);
@@ -94,7 +92,7 @@ async function startServer() {
     }
   });
 
-  /* POST: 카드(끼니) 추가 */
+  /* 끼니 추가 */
   app.post(`/spends/mealcount`, async (req, res) => {
     try {
       const existMealCount = await MealCount.findOne({ date: req.body.date });
@@ -146,7 +144,7 @@ async function startServer() {
     }
   });
 
-  /* 임시 보관 소비 카드 가져오기 */
+  /* 임시 보관 식비 카드 가져오기 */
   app.post("/spends/item/get", async (req, res) => {
     try {
       const userId = req.body.userId;
@@ -163,7 +161,7 @@ async function startServer() {
     }
   });
 
-  /* PUT: 카드수정 */
+  /* 카드 수정 */
   app.put("/spends/mealCount/:id", async (req, res) => {
     try {
       const response = await MealCount.findByIdAndUpdate(
@@ -181,7 +179,7 @@ async function startServer() {
     }
   });
 
-  /* DELETE: 식비 삭제 */
+  /* 식비 삭제 */
   app.delete("/spends/item/:id", async (req, res) => {
     try {
       await SpendItem.findByIdAndDelete(req.params.id);
@@ -191,7 +189,7 @@ async function startServer() {
     }
   });
 
-  /* DELETE: 카드 삭제 */
+  /* 끼니 삭제 */
   app.delete("/spends/mealCount/:id", async (req, res) => {
     try {
       await SpendItem.deleteMany({ date: req.body.date });
@@ -207,47 +205,53 @@ async function startServer() {
   /***************************************/
   /* 로그인 */
   app.post("/users/login", async (req, res) => {
-    const { userId, password } = req.body;
+    try {
+      const { userId, password } = req.body;
 
-    /* 아이디 확인 */
-    const user = await User.findOne({ userId });
+      const user = await User.findOne({ userId });
 
-    if (!user) {
-      res.json({ message: "ID가 존재하지 않습니다." });
-      return;
+      if (!user) {
+        res.json({ message: "ID가 존재하지 않습니다." });
+        return;
+      }
+      /* 비밀번호 확인 */
+      const validPassword = await bcrypt.compare(password, user.password);
+
+      if (!validPassword) {
+        res.json({ message: "아이디, 비밀번호를 확인해주세요." });
+        return;
+      }
+
+      /* 쿠키 발급 */
+      res.cookie("id", user._id, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      });
+      res.json({ nickName: user.nickName });
+    } catch (error) {
+      console.error("로그인 실패", error);
     }
-
-    /* 비밀번호 확인 */
-    const validPassword = await bcrypt.compare(password, user.password);
-
-    if (!validPassword) {
-      res.json({ message: "아이디, 비밀번호를 확인해주세요." });
-      return;
-    }
-
-    /* 쿠키 발급 */
-    res.cookie("id", user._id, {
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-    });
-    res.json({ nickName: user.nickName });
   });
 
   /* 유저 불러오기 */
   app.get("/users/auth", async (req, res) => {
-    const user_id = req.cookies.id;
+    try {
+      const user_id = req.cookies.id;
 
-    if (user_id) {
-      const user = await User.findById(user_id);
-      if (user) {
-        delete user.password;
-        res.json({ user });
+      if (user_id) {
+        const user = await User.findById(user_id);
+        if (user) {
+          delete user.password;
+          res.json({ user });
+        } else {
+          res.json({ message: "인증 실패" });
+        }
       } else {
         res.json({ message: "인증 실패" });
       }
-    } else {
-      res.json({ message: "인증 실패" });
+    } catch (error) {
+      console.error("유저 불러오기 에러", error);
     }
   });
 
@@ -255,9 +259,9 @@ async function startServer() {
   app.post("/users/logout", (req, res) => {
     try {
       res.clearCookie("id", {
-        path: '/',
+        path: "/",
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: "none",
         secure: true,
       });
       res.send({ message: "로그아웃성공" });
