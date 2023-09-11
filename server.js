@@ -39,28 +39,6 @@ async function startServer() {
   };
   app.use(cors(corsOptions));
 
-  // const allowCors = (req, res, next) => {
-  //   res.setHeader("Access-Control-Allow-Credentials", true);
-  //   res.setHeader(
-  //     "Access-Control-Allow-Origin",
-  //     "https://howmuchforameal.vercel.app"
-  //   );
-  //   res.setHeader(
-  //     "Access-Control-Allow-Methods",
-  //     "GET, POST, PUT, DELETE, OPTIONS"
-  //   );
-  //   res.setHeader(
-  //     "Access-Control-Allow-Headers",
-  //     "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization"
-  //   );
-  //   if (req.method === "OPTIONS") {
-  //     res.status(200).end();
-  //     return;
-  //   }
-  //   next();
-  // };
-  // app.use(allowCors); // allowCors 미들웨어를 사용
-
   /* 몽고 db 연결 */
   mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
