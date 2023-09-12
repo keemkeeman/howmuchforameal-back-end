@@ -73,11 +73,18 @@ async function startServer() {
   /* 끼니 추가 */
   app.post(`/spends/mealcount`, async (req, res) => {
     try {
-      const existMealCount = await MealCount.findOne({ date: req.body.date });
+      const existMealCount = await MealCount.findOne({
+        date: req.body.date,
+        creatorId: req.body.creatorId,
+      });
       if (!existMealCount) {
         const mealCount = new MealCount(req.body);
         await mealCount.save();
-        res.send({ message: "등록성공" });
+        const newMealCount = await MealCount.findOne({
+          date: req.body.date,
+          creatorId: req.body.creatorId,
+        });
+        res.send({ mealCountId: newMealCount._id, message: "등록성공" });
       } else {
         res.send({ message: "중복" });
       }
@@ -142,15 +149,17 @@ async function startServer() {
   /* 카드 수정 */
   app.put("/spends/mealCount/:id", async (req, res) => {
     try {
-      const response = await MealCount.findByIdAndUpdate(
-        req.params.id,
-        req.body
-      );
-      if (!response) {
-        return res.status(404).send({ message: "카드를 찾을 수 없습니다." });
-      } else {
-        return res.status(200).send({ message: "수정성공" });
-      }
+
+        const response = await MealCount.findByIdAndUpdate(
+          req.params.id,
+          req.body
+        );
+        if (!response) {
+          res.status(404).send({ message: "카드를 찾을 수 없습니다." });
+        } else {
+          res.status(200).send({ message: "수정성공" });
+        }
+
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "수정실패" });
@@ -205,6 +214,7 @@ async function startServer() {
         httpOnly: true,
         sameSite: "none",
         secure: true,
+        maxAge: 60 * 60 * 1000,
       });
       res.json({ nickName: user.nickName });
     } catch (error) {
