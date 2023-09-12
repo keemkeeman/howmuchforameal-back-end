@@ -63,7 +63,13 @@ async function startServer() {
     try {
       const newSpend = new SpendItem(req.body);
       await newSpend.save();
-      res.send({ message: "등록성공" });
+      const new_newSpend = await SpendItem.findOne({
+        date: req.body.date,
+        creatorId: req.body.creatorId,
+        itemName: req.body.itemName,
+        price: req.body.price,
+      });
+      res.send({ spendId: new_newSpend._id, message: "등록성공" });
     } catch (error) {
       console.error("식비 추가 에러");
       res.send({ message: "등록실패" });
@@ -149,17 +155,15 @@ async function startServer() {
   /* 카드 수정 */
   app.put("/spends/mealCount/:id", async (req, res) => {
     try {
-
-        const response = await MealCount.findByIdAndUpdate(
-          req.params.id,
-          req.body
-        );
-        if (!response) {
-          res.status(404).send({ message: "카드를 찾을 수 없습니다." });
-        } else {
-          res.status(200).send({ message: "수정성공" });
-        }
-
+      const response = await MealCount.findByIdAndUpdate(
+        req.params.id,
+        req.body
+      );
+      if (!response) {
+        res.status(404).send({ message: "카드를 찾을 수 없습니다." });
+      } else {
+        res.status(200).send({ message: "수정성공" });
+      }
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "수정실패" });
